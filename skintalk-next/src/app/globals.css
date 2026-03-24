@@ -707,7 +707,20 @@ h1, h2, h3, h4 {
         grid-template-columns: 1fr;
     }
     .search-container {
-        display: none;
+        flex: 1;
+        max-width: 200px;
+        margin-right: 0.5rem;
+    }
+    .search-input {
+        width: 100%;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    .search-input:focus {
+        width: 100%;
+    }
+    .mobile-menu-trigger {
+        display: flex !important;
     }
     .nav-actions {
         gap: 1rem;
@@ -732,8 +745,14 @@ h1, h2, h3, h4 {
     .nav-links {
         display: none;
     }
+    .nav-actions .search-container {
+        display: none;
+    }
     .mobile-menu-trigger {
         display: flex !important;
+    }
+    .mobile-menu-trigger svg {
+        font-size: 1.25rem;
     }
     .footer-grid {
         display: grid;
