@@ -37,6 +37,110 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     
     // =============================================
+    // EDIT MODAL HANDLERS
+    // =============================================
+    const editModalOverlay = document.getElementById('edit-modal-overlay');
+    const editModal = editModalOverlay.querySelector('.edit-modal');
+    const closeEditModalBtn = editModal.querySelector('.close-edit-modal');
+    const cancelEditBtn = document.getElementById('cancel-edit');
+    const saveEditBtn = document.getElementById('save-edit');
+    
+    // Function to open edit modal
+    function openEditModal() {
+        editModalOverlay.classList.add('show');
+        editModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Function to close edit modal
+    function closeEditModal() {
+        editModalOverlay.classList.remove('show');
+        editModal.classList.remove('show');
+        document.body.style.overflow = '';
+        // Clear form
+        document.getElementById('edit-product-name').value = '';
+        document.getElementById('edit-product-price').value = '';
+        document.getElementById('edit-product-cost').value = '';
+        document.getElementById('edit-product-stock').value = '';
+        document.getElementById('edit-product-desc').value = '';
+        // Clear editing ID
+        if (saveEditBtn.dataset.editing) {
+            delete saveEditBtn.dataset.editing;
+        }
+    }
+
+    // Function to save edited product
+    async function handleSaveEdit() {
+        const editingId = saveEditBtn.dataset.editing;
+        if (!editingId) {
+            showNotification('No product selected for editing', 'error');
+            return;
+        }
+
+        const name = document.getElementById('edit-product-name').value;
+        const price = parseFloat(document.getElementById('edit-product-price').value);
+        const cost = parseFloat(document.getElementById('edit-product-cost').value);
+        const stock = parseInt(document.getElementById('edit-product-stock').value);
+        const desc = document.getElementById('edit-product-desc').value;
+        
+        if (!name || !price || !cost || !stock || !desc) {
+            showNotification('Please fill all fields', 'error');
+            return;
+        }
+        
+        const productData = {
+            name,
+            description: desc,
+            price,
+            cost,
+            stock,
+            category: 'skincare'
+        };
+        
+        // Update product
+        if (isSupabaseAvailable && supabase) {
+            try {
+                const { error } = await supabase
+                    .from('products')
+                    .update(productData)
+                    .eq('id', editingId);
+                
+                if (error) throw error;
+                
+                showNotification('Product updated successfully!', 'success');
+            } catch (error) {
+                console.error('Error updating product:', error);
+                showNotification('Failed to update product', 'error');
+                updateProductLocal(editingId, productData);
+            }
+        } else {
+            updateProductLocal(editingId, productData);
+        }
+        
+        // Close modal and refresh UI
+        closeEditModal();
+        updateInventoryStats();
+        loadExistingProducts();
+        // Reload products grid if on shop page
+        if (productsGrid) {
+            const updatedProducts = await loadProducts();
+            renderProductsGrid(updatedProducts);
+        }
+    }
+    
+    // Event listeners for modal
+    closeEditModalBtn.addEventListener('click', closeEditModal);
+    cancelEditBtn.addEventListener('click', closeEditModal);
+    saveEditBtn.addEventListener('click', handleSaveEdit);
+    
+    // Close modal when clicking outside
+    editModalOverlay.addEventListener('click', (e) => {
+        if (e.target === editModalOverlay) {
+            closeEditModal();
+        }
+    });
+    
+    // =============================================
     // 3. PRODUCT MANAGEMENT - SUPABASE HYBRID
     // =============================================
     const addProductBtn = document.getElementById('add-product');
@@ -282,16 +386,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
         
-        // Fill form with product data
-        document.getElementById('product-name').value = product.name;
-        document.getElementById('product-price').value = product.price;
-        document.getElementById('product-cost').value = product.cost;
-        document.getElementById('product-stock').value = product.stock;
-        document.getElementById('product-desc').value = product.description || product.desc || '';
+        // Fill modal form with product data
+        document.getElementById('edit-product-name').value = product.name;
+        document.getElementById('edit-product-price').value = product.price;
+        document.getElementById('edit-product-cost').value = product.cost;
+        document.getElementById('edit-product-stock').value = product.stock;
+        document.getElementById('edit-product-desc').value = product.description || product.desc || '';
         
-        // Change button text
-        addProductBtn.innerHTML = '<i class="fas fa-save"></i> Update Product';
-        addProductBtn.dataset.editing = productId;
+        // Set editing ID on save button
+        saveEditBtn.dataset.editing = productId;
+        
+        // Open modal
+        openEditModal();
         
         showNotification(`Editing ${product.name}`, 'success');
     }
