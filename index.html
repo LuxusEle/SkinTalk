@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkinTalk | Clean Fashion & Skincare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Modern Clean Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <!-- Admin Panel Toggle -->
+    <div class="admin-panel-toggle">
+        <i class="fas fa-sliders-h"></i>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel">
+        <div class="admin-header">
+            <h2>Admin Control</h2>
+            <button class="close-admin"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-content">
+            <div class="admin-section glass-card">
+                <h3><i class="fas fa-box"></i> Add Product</h3>
+                <div class="product-form">
+                    <input type="text" id="product-name" placeholder="Product Name">
+                    <input type="number" id="product-price" placeholder="Price ($)">
+                    <input type="number" id="product-cost" placeholder="Cost ($)">
+                    <input type="number" id="product-stock" placeholder="Stock Quantity">
+                    <textarea id="product-desc" placeholder="Description"></textarea>
+                    <button class="btn-primary" id="add-product">Add Product</button>
+                </div>
+            </div>
+            <div class="admin-section glass-card">
+                <h3><i class="fas fa-chart-pie"></i> Overview</h3>
+                <div class="inventory-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="total-products">12</span>
+                        <span class="stat-label">Products</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="total-value">$2.4k</span>
+                        <span class="stat-label">Value</span>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-section glass-card">
+                <h3>Existing Products</h3>
+                <div class="products-list" id="products-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar glass-nav">
+        <div class="nav-container">
+            <div class="nav-menu left-menu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#shop" class="nav-link">Shop</a>
+            </div>
+            <div class="logo">
+                <img src="logo.jpeg" alt="SkinTalk" class="logo-img">
+            </div>
+            <div class="nav-actions right-menu">
+                <a href="#about" class="nav-link">About</a>
+                <button class="cart-btn">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count">3</span>
+                </button>
+                
+                <!-- Auth Button & User Menu -->
+                <div class="auth-container">
+                    <button class="auth-btn" id="auth-btn">
+                        <i class="fas fa-user"></i>
+                        <span>Sign In</span>
+                    </button>
+                    <div class="user-menu glass-card" id="user-menu" style="display: none;">
+                        <div class="user-info">
+                            <span id="user-name"></span>
+                            <small id="user-email"></small>
+                        </div>
+                        <div class="user-links">
+                            <a href="#profile"><i class="fas fa-user"></i> Profile</a>
+                            <a href="#orders"><i class="fas fa-shopping-bag"></i> Orders</a>
+                            <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="container hero-container">
+            <div class="hero-content glass-card animate-up">
+                <p class="hero-pretitle">New Collection</p>
+                <h1 class="hero-title">Discover Your<br>Perfect Glow</h1>
+                <p class="hero-subtitle">Experience minimalism and pure ingredients in our latest skincare and fashion drop.</p>
+                <button class="btn-primary btn-large">Shop the Collection</button>
+            </div>
+            <div class="hero-image-wrapper">
+                <img src="theme.jpeg" alt="Hero Fashion" class="hero-main-img animate-fade">
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="shop-section" id="shop">
+        <div class="container">
+            <div class="section-header text-center animate-up">
+                <h2 class="section-title">Trending Now</h2>
+                <div class="title-underline"></div>
+            </div>
+            
+            <div class="products-grid">
+                <!-- Product 1 -->
+                <div class="glass-product-card animate-up">
+                    <div class="product-img-wrap">
+                        <img src="WhatsApp Image 2026-03-23 at 9.10.39 AM.jpeg" alt="Serum">
+                        <span class="badge new-badge">New</span>
+                    </div>
+                    <div class="product-details">
+                        <h3 class="product-name">Radiance Serum</h3>
+                        <p class="product-price">$45.00</p>
+                        <button class="btn-outline add-cart-btn">Add to Cart</button>
+                    </div>
+                </div>
+
+                <!-- Product 2 -->
+                <div class="glass-product-card animate-up" style="animation-delay: 0.1s;">
+                    <div class="product-img-wrap">
+                        <img src="WhatsApp Image 2026-03-23 at 9.10.40 AM.jpeg" alt="Cream">
+                    </div>
+                    <div class="product-details">
+                        <h3 class="product-name">Silk Moisture Cream</h3>
+                        <p class="product-price">$55.00</p>
+                        <button class="btn-outline add-cart-btn">Add to Cart</button>
+                    </div>
+                </div>
+
+                <!-- Product 3 -->
+                <div class="glass-product-card animate-up" style="animation-delay: 0.2s;">
+                    <div class="product-img-wrap">
+                        <img src="WhatsApp Image 2026-03-23 at 9.10.40 AM2.jpeg" alt="Cleanser">
+                        <span class="badge sale-badge">Sale</span>
+                    </div>
+                    <div class="product-details">
+                        <h3 class="product-name">Purifying Cleanser</h3>
+                        <p class="product-price"><span class="old-price">$35.00</span> $28.00</p>
+                        <button class="btn-outline add-cart-btn">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="container align-center">
+            <div class="about-grid">
+                <div class="about-image glass-card animate-up">
+                    <img src="WhatsApp Image 2026-03-23 at 9.10.41 AM.jpeg" alt="About Brand">
+                </div>
+                <div class="about-text animate-up" style="animation-delay: 0.2s;">
+                    <h2 class="section-title">Clean Beauty,<br>Modern Aesthetic</h2>
+                    <p>We blend the aesthetics of a modern fashion store with the purity of clean skincare. Our products are formulated to look beautiful on your vanity and feel incredible on your skin.</p>
+                    <button class="btn-outline">Read Our Story</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer glass-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <img src="logo.jpeg" alt="SkinTalk" class="footer-logo">
+                    <p>Elevating your daily routine.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Shop</h4>
+                    <a href="#">Skincare</a>
+                    <a href="#">Accessories</a>
+                    <a href="#">New Arrivals</a>
+                </div>
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <a href="#">About Us</a>
+                    <a href="#">Contact</a>
+                    <a href="#">Careers</a>
+                </div>
+                <div class="footer-newsletter">
+                    <h4>Stay in the loop</h4>
+                    <div class="subscribe-form">
+                        <input type="email" placeholder="Your email">
+                        <button class="btn-primary">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2026 SkinTalk. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div class="cart-overlay"></div>
+    <div class="cart-sidebar glass-sidebar">
+        <div class="cart-header">
+            <h3>Your Bag</h3>
+            <button class="close-cart"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items">
+            <!-- Items injected by JS -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total-row">
+                <span>Subtotal</span>
+                <span class="cart-total-price">$0.00</span>
+            </div>
+            <button class="btn-primary btn-block checkout-btn">Checkout</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="auth-overlay" id="auth-overlay"></div>
+    <div class="auth-modal glass-card" id="auth-modal">
+        <div class="auth-header">
+            <h3>Welcome to SkinTalk</h3>
+            <button class="close-auth" id="close-auth"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Login</button>
+            <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+        
+        <div class="auth-content">
+            <div class="auth-form active" id="login-form">
+                <div class="form-group">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <button id="login-btn" class="btn-primary btn-block">Sign In</button>
+                <div class="auth-divider">
+                    <span>or continue with</span>
+                </div>
+                <button class="btn-google" id="google-login">
+                    <i class="fab fa-google"></i> Google
+                </button>
+            </div>
+            
+            <div class="auth-form" id="signup-form">
+                <div class="form-group">
+                    <input type="text" id="signup-name" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="signup-email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signup-password" placeholder="Password" required>
+                </div>
+                <button id="signup-btn" class="btn-primary btn-block">Create Account</button>
+            </div>
+        </div>
+        
+        <div class="auth-footer">
+            <p>By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+        </div>
+    </div>
+
+    <!-- Supabase Integration -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    
+    <script src="script.js"></script>
+    <script>
+        // Simple animations intersection observer
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.animate-up, .animate-fade').forEach(el => {
+            if(el.classList.contains('animate-up')) {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+            }
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

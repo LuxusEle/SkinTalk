@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÉLÉGANCE | Modern Fashion Boutique</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="fashion-style.css">
+</head>
+<body>
+    <!-- Admin Panel Toggle -->
+    <div class="admin-panel-toggle">
+        <i class="fas fa-store"></i>
+        <span class="admin-label">Merchant</span>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel">
+        <div class="admin-header">
+            <h2><i class="fas fa-crown"></i> Merchant Dashboard</h2>
+            <button class="close-admin"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="admin-content">
+            <div class="admin-section">
+                <h3><i class="fas fa-tshirt"></i> Collection Management</h3>
+                <div class="product-form">
+                    <input type="text" id="collection-name" placeholder="Collection Name">
+                    <input type="text" id="item-name" placeholder="Item Name">
+                    <input type="number" id="item-price" placeholder="Price ($)">
+                    <input type="number" id="item-cost" placeholder="Cost ($)">
+                    <input type="number" id="item-stock" placeholder="Stock Quantity">
+                    <select id="item-category">
+                        <option value="">Select Category</option>
+                        <option value="dresses">Dresses</option>
+                        <option value="tops">Tops</option>
+                        <option value="bottoms">Bottoms</option>
+                        <option value="outerwear">Outerwear</option>
+                        <option value="accessories">Accessories</option>
+                    </select>
+                    <button id="add-item"><i class="fas fa-plus"></i> Add to Collection</button>
+                </div>
+            </div>
+            <div class="admin-section">
+                <h3><i class="fas fa-chart-line"></i> Inventory Overview</h3>
+                <div class="inventory-stats">
+                    <div class="stat-card">
+                        <span class="stat-value" id="total-items">24</span>
+                        <span class="stat-label">Total Items</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="low-stock">3</span>
+                        <span class="stat-label">Low Stock</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value" id="total-value">$8,450</span>
+                        <span class="stat-label">Inventory Value</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-text">ÉLÉGANCE</div>
+                <div class="logo-subtitle">Modern Fashion</div>
+            </div>
+            <div class="nav-menu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#collections" class="nav-link">Collections</a>
+                <a href="#shop" class="nav-link">Shop</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            <div class="nav-actions">
+                <button class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="wishlist-btn">
+                    <i class="far fa-heart"></i>
+                    <span class="wishlist-count">2</span>
+                </button>
+                <button class="cart-btn">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="cart-count">3</span>
+                </button>
+            </div>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-background">
+            <div class="hero-pattern"></div>
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Redefining <span class="highlight">Modern Elegance</span></h1>
+                <p class="hero-subtitle">Discover curated fashion pieces that blend timeless sophistication with contemporary design.</p>
+                <div class="hero-cta">
+                    <button class="cta-primary">Shop Collection</button>
+                    <button class="cta-secondary">View Lookbook</button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="image-frame">
+                    <div class="image-placeholder">
+                        <i class="fas fa-tshirt"></i>
+                        <span>Fashion Image</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Collections -->
+    <section class="collections" id="collections">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Spring <span class="highlight">Collections</span></h2>
+                <p class="section-subtitle">Curated pieces for the modern wardrobe</p>
+            </div>
+            <div class="collections-grid">
+                <div class="collection-card">
+                    <div class="collection-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-female"></i>
+                            <span>Evening Wear</span>
+                        </div>
+                    </div>
+                    <div class="collection-info">
+                        <h3>Evening Elegance</h3>
+                        <p>Sophisticated dresses for special occasions</p>
+                        <button class="collection-btn">View Collection</button>
+                    </div>
+                </div>
+                <div class="collection-card">
+                    <div class="collection-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-tshirt"></i>
+                            <span>Casual Wear</span>
+                        </div>
+                    </div>
+                    <div class="collection-info">
+                        <h3>Casual Chic</h3>
+                        <p>Everyday essentials with elevated style</p>
+                        <button class="collection-btn">View Collection</button>
+                    </div>
+                </div>
+                <div class="collection-card">
+                    <div class="collection-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-gem"></i>
+                            <span>Accessories</span>
+                        </div>
+                    </div>
+                    <div class="collection-info">
+                        <h3>Statement Pieces</h3>
+                        <p>Bold accessories to complete any look</p>
+                        <button class="collection-btn">View Collection</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured-products" id="shop">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Featured <span class="highlight">Pieces</span></h2>
+                <p class="section-subtitle">This season's most coveted items</p>
+            </div>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-vest"></i>
+                            <span>Silk Blouse</span>
+                        </div>
+                        <div class="product-badge">NEW</div>
+                        <button class="quick-view"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Silk Satin Blouse</h3>
+                        <p class="product-desc">Luxury silk with pearl detailing</p>
+                        <div class="product-price">
+                            <span class="current-price">$189.99</span>
+                            <span class="original-price">$229.99</span>
+                        </div>
+                        <div class="product-stock">
+                            <span class="stock-label">In Stock:</span>
+                            <span class="stock-value">12 units</span>
+                        </div>
+                        <button class="add-to-cart"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-vest-patches"></i>
+                            <span>Tailored Blazer</span>
+                        </div>
+                        <div class="product-badge">BEST SELLER</div>
+                        <button class="quick-view"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Tailored Wool Blazer</h3>
+                        <p class="product-desc">Italian wool with structured fit</p>
+                        <div class="product-price">
+                            <span class="current-price">$299.99</span>
+                        </div>
+                        <div class="product-stock">
+                            <span class="stock-label">In Stock:</span>
+                            <span class="stock-value">8 units</span>
+                        </div>
+                        <button class="add-to-cart"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-skirt"></i>
+                            <span>Midi Skirt</span>
+                        </div>
+                        <button class="quick-view"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Pleated Midi Skirt</h3>
+                        <p class="product-desc">Flow chiffon with hidden pockets</p>
+                        <div class="product-price">
+                            <span class="current-price">$159.99</span>
+                            <span class="original-price">$189.99</span>
+                        </div>
+                        <div class="product-stock">
+                            <span class="stock-label">In Stock:</span>
+                            <span class="stock-value">15 units</span>
+                        </div>
+                        <button class="add-to-cart"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="image-placeholder">
+                            <i class="fas fa-ring"></i>
+                            <span>Statement Ring</span>
+                        </div>
+                        <button class="quick-view"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Art Deco Statement Ring</h3>
+                        <p class="product-desc">Gold-plated with cubic zirconia</p>
+                        <div class="product-price">
+                            <span class="current-price">$89.99</span>
+                        </div>
+                        <div class="product-stock">
+                            <span class="stock-label">In Stock:</span>
+                            <span class="stock-value">25 units</span>
+                        </div>
+                        <button class="add-to-cart"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">Our <span class="highlight">Philosophy</span></h2>
+                    <p>At ÉLÉGANCE, we believe fashion should empower and inspire. Each piece in our collection is carefully curated to blend timeless elegance with modern sensibility.</p>
+                    <p>We partner with ethical artisans and use sustainable materials to create fashion that not only looks beautiful but feels good to wear.</p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <span class="stat-number">50+</span>
+                            <span class="stat-label">Designers</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">Ethical Sourcing</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">5000+</span>
+                            <span class="stat-label">Happy Clients</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div class="image-frame">
+                        <div class="image-placeholder">
+                            <i class="fas fa-store-alt"></i>
+                            <span>Boutique Interior</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <h2>Stay in Style</h2>
+                <p>Subscribe to receive exclusive updates on new collections and special offers.</p>
+                <div class="newsletter-form">
+                    <input type="email" placeholder="Your email address">
+                    <button type="submit">Subscribe</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <div class="logo-text">ÉLÉGANCE</div>
+                        <div class="logo-subtitle">Modern Fashion</div>
+                    </div>
+                    <p class="footer-description">Redefining modern elegance with curated fashion pieces for the contemporary wardrobe.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-pinterest"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#collections">Collections</a></li>
+                        <li><a href="#shop">Shop</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Customer Service</h3>
+                    <ul>
+                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Size Guide</a></li>
+                        <li><a href="#">Care Instructions</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Info</h3>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Fashion Ave, NYC</li>
+                        <li><i class="fas fa-phone"></i> (555) 123-4567</li>
+                        <li><i class="fas fa-envelope"></i> hello@elegance.com</li>
+                        <li><i class="fas fa-clock"></i> Mon-Fri: 10AM-8PM</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ÉLÉGANCE. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div class="cart-modal">
+        <div class="cart-modal-content">
+            <div class="cart-header">
+                <h2><i class="fas fa-shopping-bag"></i> Your Shopping Bag</h2>
+                <button class="close-cart"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="cart-items">
+                <!-- Cart items will be added here dynamically -->
+            </div>
+            <div class="cart-summary">
+                <div class="cart-total">
+                    <span>Total:</span>
+                    <span class="total-amount">$0.00</span>
+                </div>
+                <div class="cart-actions">
+                    <button class="continue-shopping">Continue Shopping</button>
+                    <button class="checkout-btn">Proceed to Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="fashion-script.js"></script>
+</body>
+</html>
