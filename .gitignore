@@ -60,3 +60,6 @@ Thumbs.db
 # Local development
 .local
 .cache
+
+# specific directories
+skintalk-next/
