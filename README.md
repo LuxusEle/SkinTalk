@@ -1,5 +1,7 @@
 # SkinTalk E-commerce with Supabase
 
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/LuxusEle/SkinTalk)
+
 Modern skincare and fashion e-commerce platform with glassmorphism design and Supabase backend integration.
 
 ## 🚀 Quick Start
