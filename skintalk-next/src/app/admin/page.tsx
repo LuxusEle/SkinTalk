@@ -29,6 +29,7 @@ interface Order {
     status: string;
     created_at: string;
     items_detail?: { name: string; price: number; image: string }[];
+    customer_email?: string;
 }
 
 interface UserProfile {
@@ -89,40 +90,70 @@ export default function AdminPage() {
     const loadData = async () => {
         const supabase = getSupabase();
 
-        const [productsRes, ordersRes, usersRes, categoriesRes] = await Promise.all([
+        const [productsRes, usersRes, categoriesRes] = await Promise.all([
             supabase.from('products').select('*').order('created_at', { ascending: false }),
-            supabase.from('orders').select('*').order('created_at', { ascending: false }),
             supabase.from('user_profiles').select('*').order('created_at', { ascending: false }),
             supabase.from('categories').select('*').order('name', { ascending: true })
         ]);
 
-        console.log('usersRes:', usersRes);
+        let ordersRes: any = { data: [] };
+        if (user) {
+            const ordersApiRes = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_orders', userEmail: user.email })
+            });
+            ordersRes = await ordersApiRes.json();
+        }
+
+        console.log('productsRes:', productsRes.data?.length);
         console.log('ordersRes:', ordersRes);
+        console.log('ordersRes.error:', ordersRes.error);
 
         if (productsRes.data) setProducts(productsRes.data);
-        if (ordersRes.data) {
-            const ordersWithDetails = ordersRes.data.map(order => {
-                const itemsDetail = order.items?.map((item: { product_id: string }) => {
-                    const product = productsRes.data?.find(p => p.id === item.product_id);
-                    return product ? { name: product.name, price: product.price, image: product.image } : null;
-                }).filter(Boolean);
-                return { ...order, items_detail: itemsDetail };
+        if (ordersRes.data && ordersRes.data.length > 0) {
+            const ordersWithDetails = ordersRes.data.map((order: any) => {
+                let itemsDetail: any[] = [];
+                if (order.items && Array.isArray(order.items)) {
+                    itemsDetail = order.items.map((item: any) => {
+                        if (item.product_id) {
+                            const product = productsRes.data?.find(p => p.id === item.product_id);
+                            return product ? { name: product.name, price: product.price, image: product.image } : null;
+                        } else if (item.name) {
+                            return { name: item.name, price: item.price, image: item.image };
+                        }
+                        return null;
+                    }).filter(Boolean);
+                }
+                const customer = usersRes.data?.find(u => u.id === order.user_id);
+                return { ...order, items_detail: itemsDetail, customer_email: customer?.email || 'Unknown' };
             });
+            console.log('ordersWithDetails:', ordersWithDetails);
             setOrders(ordersWithDetails);
         }
         if (categoriesRes.data) setCategories(categoriesRes.data);
         
         if (usersRes.data && ordersRes.data) {
-            const usersWithSpent = usersRes.data.map(u => {
-                const userOrders = ordersRes.data?.filter(o => o.user_id === u.id) || [];
-                const totalSpent = userOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+            const usersWithSpent = usersRes.data.map((u: any) => {
+                const userOrders = ordersRes.data?.filter((o: any) => o.user_id === u.id) || [];
+                const totalSpent = userOrders.reduce((sum: number, o: any) => {
+                    if (o.status !== 'cancelled' && o.status !== 'Cancelled') {
+                        return sum + (o.total || 0);
+                    }
+                    return sum;
+                }, 0);
                 return { ...u, total_spent: totalSpent };
             });
             console.log('usersWithSpent:', usersWithSpent);
             setUsers(usersWithSpent);
         }
 
-        const totalRevenue = ordersRes.data?.reduce((sum, o) => sum + o.total, 0) || 0;
+        const totalRevenue = ordersRes.data?.reduce((sum: number, o: any) => {
+            if (o.status !== 'cancelled' && o.status !== 'Cancelled') {
+                return sum + o.total;
+            }
+            return sum;
+        }, 0) || 0;
         setStats({
             totalRevenue,
             totalOrders: ordersRes.data?.length || 0,
@@ -375,7 +406,7 @@ export default function AdminPage() {
                             <table className="admin-table">
                                 <thead>
                                     <tr>
-                                        <th>Order ID</th>
+                                        <th>Customer</th>
                                         <th>Items</th>
                                         <th>Total</th>
                                         <th>Status</th>
@@ -385,7 +416,7 @@ export default function AdminPage() {
                                 <tbody>
                                     {orders.slice(0, 5).map(order => (
                                         <tr key={order.id}>
-                                            <td>{order.id.slice(0, 8)}...</td>
+                                            <td>{order.customer_email || 'Unknown'}</td>
                                             <td>{order.items?.length || 0} items</td>
                                             <td>${order.total.toFixed(2)}</td>
                                             <td><span className={`status-badge ${order.status}`}>{order.status}</span></td>
@@ -495,7 +526,6 @@ export default function AdminPage() {
                             <table className="admin-table">
                                 <thead>
                                     <tr>
-                                        <th>Order ID</th>
                                         <th>Customer</th>
                                         <th>Items</th>
                                         <th>Total</th>
@@ -507,8 +537,7 @@ export default function AdminPage() {
                                 <tbody>
                                     {orders.map(order => (
                                         <tr key={order.id}>
-                                            <td>{order.id.slice(0, 8)}...</td>
-                                            <td>{order.user_id.slice(0, 8)}...</td>
+                                            <td>{order.customer_email}</td>
                                             <td>{order.items_detail?.map((item, i) => <div key={i}>{item.name}</div>)}</td>
                                             <td>${order.total.toFixed(2)}</td>
                                             <td><span className={`status-badge ${order.status}`}>{order.status}</span></td>

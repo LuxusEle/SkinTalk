@@ -69,6 +69,13 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ success: true, data: category });
             }
 
+            case 'get_orders': {
+                const { data: orders, error } = await adminClient.from('orders').select('*').order('created_at', { ascending: false });
+                
+                if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+                return NextResponse.json({ success: true, data: orders });
+            }
+
             case 'update_order_status': {
                 const { id, status } = data;
                 const { error } = await adminClient.from('orders').update({ status }).eq('id', id);
