@@ -4,22 +4,22 @@ import { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faShoppingBag, faTimes, faBars, faMagic, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { getSupabase, isAdminEmail, getAdminClient } from '@/lib/supabase';
 
-const products = [
-    { id: 1, name: "Radiance Vitamin C Serum", price: 45, img: "/WhatsApp Image 2026-03-23 at 9.10.39 AM.jpeg", cat: "Serums" },
-    { id: 2, name: "Silk Moisture Face Cream", price: 55, img: "/WhatsApp Image 2026-03-23 at 9.10.40 AM.jpeg", cat: "Moisturizers" },
-    { id: 3, name: "Purifying Gel Cleanser", price: 28, img: "/WhatsApp Image 2026-03-23 at 9.10.40 AM2.jpeg", cat: "Cleansers" },
-    { id: 4, name: "Overnight Repair Mask", price: 62, img: "/WhatsApp Image 2026-03-23 at 9.10.40 AM4.jpeg", cat: "Masks" },
-    { id: 5, name: "SPF 50 Daily Protection", price: 38, img: "/WhatsApp Image 2026-03-23 at 9.10.39 AM2.jpeg", cat: "Sunscreen" },
-    { id: 6, name: "Balancing Facial Toner", price: 32, img: "/WhatsApp Image 2026-03-23 at 9.10.41 AM.jpeg", cat: "Toners" }
-];
-
-interface CartItem {
-    id: number;
+interface Product {
+    id: string;
     name: string;
     price: number;
-    img: string;
+    image: string;
+    category: string;
+}
+
+interface CartItem {
+    id: string;
+    name: string;
+    price: number;
+    image: string;
 }
 
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -44,9 +44,9 @@ function ParallaxImage({ src, alt, className = '' }: { src: string; alt: string;
 }
 
 export default function Home() {
+    const router = useRouter();
     const [scrolled, setScrolled] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
-    const [adminOpen, setAdminOpen] = useState(false);
     const [cart, setCart] = useState<CartItem[]>([]);
     const [theme, setTheme] = useState('elegant');
     const [searchQuery, setSearchQuery] = useState('');
@@ -61,6 +61,12 @@ export default function Home() {
     const [authLoading, setAuthLoading] = useState(false);
     const [authError, setAuthError] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [newProductName, setNewProductName] = useState('');
+    const [newProductPrice, setNewProductPrice] = useState('');
+    const [newProductImage, setNewProductImage] = useState<File | null>(null);
+    const [newProductCategory, setNewProductCategory] = useState('General');
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -127,6 +133,84 @@ export default function Home() {
         const { data } = await supabase.from('carts').select('items').eq('user_id', userId).single();
         if (data?.items) {
             setCart(data.items);
+        }
+    };
+
+    const loadProducts = async () => {
+        const supabase = getSupabase();
+        const { data } = await supabase.from('products').select('*');
+        if (data) setProducts(data);
+    };
+
+    useEffect(() => {
+        loadProducts();
+    }, []);
+
+    const handleAddProduct = async () => {
+        if (!newProductName || !newProductPrice) {
+            alert('Please enter product name and price');
+            return;
+        }
+        const adminClient = getAdminClient();
+        if (!adminClient) {
+            alert('Admin access not configured');
+            return;
+        }
+
+        setUploading(true);
+        let imageUrl = '/WhatsApp Image 2026-03-23 at 9.10.39 AM.jpeg';
+
+        if (newProductImage) {
+            const fileExt = newProductImage.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+            const { data: uploadData, error: uploadError } = await adminClient.storage
+                .from('products')
+                .upload(fileName, newProductImage);
+
+            if (uploadError) {
+                alert('Error uploading image: ' + uploadError.message);
+                setUploading(false);
+                return;
+            }
+
+            const { data: { publicUrl } } = adminClient.storage
+                .from('products')
+                .getPublicUrl(fileName);
+            imageUrl = publicUrl;
+        }
+
+        const { error } = await adminClient.from('products').insert({
+            name: newProductName,
+            price: parseFloat(newProductPrice),
+            image: imageUrl,
+            category: newProductCategory
+        });
+        if (error) {
+            alert('Error adding product: ' + error.message);
+        } else {
+            setNewProductName('');
+            setNewProductPrice('');
+            setNewProductImage(null);
+            setNewProductCategory('General');
+            loadProducts();
+            alert('Product added successfully!');
+        }
+        setUploading(false);
+    };
+
+    const handleDeleteProduct = async (productId: string) => {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        const adminClient = getAdminClient();
+        if (!adminClient) {
+            alert('Admin access not configured');
+            return;
+        }
+        const { error } = await adminClient.from('products').delete().eq('id', productId);
+        if (error) {
+            alert('Error deleting product: ' + error.message);
+        } else {
+            loadProducts();
+            alert('Product deleted successfully!');
         }
     };
 
@@ -277,7 +361,7 @@ export default function Home() {
                             <FadeIn key={product.id} delay={index * 0.1}>
                                 <motion.div className="product-card" whileHover={{ y: -10 }} transition={{ duration: 0.3 }}>
                                     <div className="product-image-container">
-                                        <img src={product.img} alt={product.name} className="product-img" />
+                                        <img src={product.image} alt={product.name} className="product-img" />
                                         <motion.button className="quick-add" onClick={() => addToCart(product)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Add to Bag</motion.button>
                                     </div>
                                     <div className="product-info"><h3>{product.name}</h3><p className="product-price">${product.price.toFixed(2)}</p></div>
@@ -309,7 +393,7 @@ export default function Home() {
                 <div className="container footer-bottom">&copy; 2026 SkinTalk Cosmetics. Artfully Crafted.</div>
             </footer>
 
-            <div className={`sidebar-overlay ${cartOpen || adminOpen || authModalOpen ? 'active' : ''}`} onClick={() => { setCartOpen(false); setAdminOpen(false); setAuthModalOpen(false); }}></div>
+            <div className={`sidebar-overlay ${cartOpen || authModalOpen ? 'active' : ''}`} onClick={() => { setCartOpen(false); setAuthModalOpen(false); }}></div>
             
             <div className={`sidebar ${cartOpen ? 'active' : ''}`} id="cart-sidebar">
                 <div className="sidebar-header">
@@ -318,21 +402,13 @@ export default function Home() {
                 </div>
                 <div className="sidebar-content">
                     {cart.length === 0 ? <p className="empty-cart">Your bag is empty.</p> : cart.map((item, index) => (
-                        <div className="cart-item" key={index}><img src={item.img} alt={item.name} className="cart-item-img" /><div className="cart-item-info"><h4>{item.name}</h4><p>${item.price.toFixed(2)}</p><button onClick={() => removeFromCart(index)}>Remove</button></div></div>
+                        <div className="cart-item" key={index}><img src={item.image} alt={item.name} className="cart-item-img" /><div className="cart-item-info"><h4>{item.name}</h4><p>${item.price.toFixed(2)}</p><button onClick={() => removeFromCart(index)}>Remove</button></div></div>
                     ))}
                 </div>
                 {cart.length > 0 && <div className="sidebar-footer"><div className="cart-total"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div><button className="hero-cta" style={{ width: '100%' }} onClick={handleCheckout}>Proceed to Checkout</button></div>}
             </div>
 
-            <div className={`sidebar ${adminOpen ? 'active' : ''}`} id="admin-panel">
-                <div className="sidebar-header"><h3>Merchant Dashboard</h3><button className="icon-btn close-admin" onClick={() => setAdminOpen(false)}><FontAwesomeIcon icon={faTimes} /></button></div>
-                <div className="sidebar-content">
-                    <div className="admin-section"><h4>Global Settings</h4><div className="form-group"><label>Store Personality</label><select value={theme} onChange={(e) => setTheme(e.target.value)} style={{ width: '100%', padding: '12px', border: '1px solid #eee' }}><option value="elegant">Elegant (Soft Rose)</option><option value="glow">Glow (Radiant Pink)</option></select></div></div>
-                    <div className="admin-section"><h4>Product Management</h4><div className="admin-product-form"><p>Add a new skincare essential to the catalog.</p><input type="text" placeholder="Item Name" style={{ width: '100%', padding: '10px', border: '1px solid #eee', marginBottom: '0.5rem' }} /><input type="number" placeholder="Price" style={{ width: '100%', padding: '10px', border: '1px solid #eee', marginBottom: '1rem' }} /><button className="hero-cta" style={{ width: '100%', padding: '0.8rem', fontSize: '0.75rem' }}>Add Product</button></div></div>
-                </div>
-            </div>
-
-            <motion.button className="admin-trigger" id="admin-trigger" onClick={() => setAdminOpen(true)} whileHover={{ rotate: 45, scale: 1.1 }} whileTap={{ scale: 0.9 }}><FontAwesomeIcon icon={faMagic} /></motion.button>
+            {isAdmin && <motion.button className="admin-trigger" id="admin-trigger" onClick={() => router.push('/admin')} whileHover={{ rotate: 45, scale: 1.1 }} whileTap={{ scale: 0.9 }}><FontAwesomeIcon icon={faMagic} /></motion.button>}
 
             {showSearch && (
                 <div className="search-modal-overlay" onClick={() => setShowSearch(false)}>
@@ -347,7 +423,7 @@ export default function Home() {
                                     {searchResults.map((product) => (
                                         <div className="product-card" key={product.id}>
                                             <div className="product-image-container">
-                                                <img src={product.img} alt={product.name} className="product-img" />
+                                                <img src={product.image} alt={product.name} className="product-img" />
                                                 <button className="quick-add" onClick={() => { addToCart(product); setShowSearch(false); setSearchQuery(''); }}>Add to Bag</button>
                                             </div>
                                             <div className="product-info"><h3>{product.name}</h3><p className="product-price">${product.price.toFixed(2)}</p></div>
