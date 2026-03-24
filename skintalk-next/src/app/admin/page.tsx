@@ -18,6 +18,7 @@ interface Product {
     price: number;
     image: string;
     category: string;
+    quantity: number;
     created_at: string;
 }
 
@@ -53,6 +54,7 @@ export default function AdminPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [newProductName, setNewProductName] = useState('');
     const [newProductPrice, setNewProductPrice] = useState('');
+    const [newProductQuantity, setNewProductQuantity] = useState('');
     const [newProductCategory, setNewProductCategory] = useState('General');
     const [newProductImage, setNewProductImage] = useState<File | null>(null);
     const [newProductImageName, setNewProductImageName] = useState('');
@@ -200,8 +202,8 @@ export default function AdminPage() {
     };
 
     const handleSaveProduct = async () => {
-        if (!newProductName || !newProductPrice) {
-            alert('Please enter product name and price');
+        if (!newProductName || !newProductPrice || !newProductQuantity) {
+            alert('Please enter product name, price and quantity');
             return;
         }
         if (!user) {
@@ -218,6 +220,7 @@ export default function AdminPage() {
             const data: any = {
                 name: newProductName,
                 price: parseFloat(newProductPrice),
+                quantity: parseInt(newProductQuantity) || 0,
                 image: imgUrl,
                 category: newProductCategory
             };
@@ -279,6 +282,7 @@ export default function AdminPage() {
     const resetForm = () => {
         setNewProductName('');
         setNewProductPrice('');
+        setNewProductQuantity('');
         setNewProductCategory('General');
         setNewProductImage(null);
         setNewProductImageName('');
@@ -289,6 +293,7 @@ export default function AdminPage() {
         setEditingProduct(product);
         setNewProductName(product.name);
         setNewProductPrice(product.price.toString());
+        setNewProductQuantity(product.quantity?.toString() || '0');
         setNewProductCategory(product.category || 'General');
         setNewProductImage(null);
         setNewProductImageName('');
@@ -438,6 +443,7 @@ export default function AdminPage() {
                             <div className="admin-form-grid">
                                 <input type="text" placeholder="Product Name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
                                 <input type="number" placeholder="Price" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
+                                <input type="number" placeholder="Quantity" value={newProductQuantity} onChange={(e) => setNewProductQuantity(e.target.value)} />
                                 {categories.length === 0 ? (
                                     <input type="text" placeholder="Category" value={newProductCategory} onChange={(e) => setNewProductCategory(e.target.value)} />
                                 ) : !showAddCategory ? (
@@ -496,6 +502,7 @@ export default function AdminPage() {
                                         <th>Name</th>
                                         <th>Category</th>
                                         <th>Price</th>
+                                        <th>Qty</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -506,6 +513,7 @@ export default function AdminPage() {
                                             <td>{product.name}</td>
                                             <td>{product.category}</td>
                                             <td>${product.price.toFixed(2)}</td>
+                                            <td>{product.quantity || 0}</td>
                                             <td onClick={(e) => e.stopPropagation()}>
                                                 <button className="admin-btn danger" onClick={() => handleDeleteProduct(product.id)}>
                                                     <FontAwesomeIcon icon={faTrash} />

@@ -13,6 +13,7 @@ interface Product {
     price: number;
     image: string;
     category: string;
+    quantity: number;
 }
 
 interface CartItem {
@@ -64,6 +65,7 @@ export default function Home() {
     const [newProductImage, setNewProductImage] = useState<File | null>(null);
     const [newProductCategory, setNewProductCategory] = useState('General');
     const [uploading, setUploading] = useState(false);
+    const [checkoutLoading, setCheckoutLoading] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -227,22 +229,35 @@ export default function Home() {
             setCartOpen(false);
             setAuthModalOpen(true);
         } else {
-            const supabase = getSupabase();
-            const orderItems = cart.map(item => ({ product_id: (item as any).id || (item as any).product_id }));
-            const { error } = await supabase.from('orders').insert({
-                user_id: user.id,
-                items: orderItems,
-                total: cartTotal,
-                status: 'pending'
+            setCheckoutLoading(true);
+            const orderItems = cart.map(item => ({ product_id: (item as any).id }));
+            
+            const res = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'place_order',
+                    data: {
+                        userId: user.id,
+                        items: orderItems,
+                        total: cartTotal
+                    },
+                    userEmail: user.email
+                })
             });
-            if (error) {
-                alert('Error placing order: ' + error.message);
+            const json = await res.json();
+            
+            setCheckoutLoading(false);
+            
+            if (json.error) {
+                alert('Error placing order: ' + json.error);
                 return;
             }
             await saveCartToDb(user.id, []);
             alert('Order placed successfully!');
             setCart([]);
             setCartOpen(false);
+            loadProducts();
         }
     };
 
@@ -374,7 +389,11 @@ export default function Home() {
                                 <motion.div className="product-card" whileHover={{ y: -10 }} transition={{ duration: 0.3 }}>
                                     <div className="product-image-container">
                                         <img src={product.image} alt={product.name} className="product-img" />
-                                        <motion.button className="quick-add" onClick={() => addToCart(product)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Add to Bag</motion.button>
+                                        {(!product.quantity || product.quantity <= 0) ? (
+                                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '0.5rem 1rem', borderRadius: '4px', fontSize: '0.85rem' }}>Out of Stock</div>
+                                        ) : (
+                                            <motion.button className="quick-add" onClick={() => addToCart(product)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Add to Bag</motion.button>
+                                        )}
                                     </div>
                                     <div className="product-info"><h3>{product.name}</h3><p className="product-price">${product.price.toFixed(2)}</p></div>
                                 </motion.div>
@@ -420,7 +439,7 @@ export default function Home() {
                         );
                     })}
                 </div>
-                {cart.length > 0 && <div className="sidebar-footer"><div className="cart-total"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div><button className="hero-cta" style={{ width: '100%' }} onClick={handleCheckout}>Proceed to Checkout</button></div>}
+                {cart.length > 0 && <div className="sidebar-footer"><div className="cart-total"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div><button className="hero-cta" style={{ width: '100%' }} onClick={handleCheckout} disabled={checkoutLoading}>{checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}</button></div>}
             </div>
 
             {isAdmin && <motion.button className="admin-trigger" id="admin-trigger" onClick={() => router.push('/admin')} whileHover={{ rotate: 45, scale: 1.1 }} whileTap={{ scale: 0.9 }}><FontAwesomeIcon icon={faMagic} /></motion.button>}
@@ -439,7 +458,11 @@ export default function Home() {
                                         <div className="product-card" key={product.id}>
                                             <div className="product-image-container">
                                                 <img src={product.image} alt={product.name} className="product-img" />
-                                                <button className="quick-add" onClick={() => { addToCart(product); setShowSearch(false); setSearchQuery(''); }}>Add to Bag</button>
+                                                {(!product.quantity || product.quantity <= 0) ? (
+                                                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.7)', color: 'white', padding: '0.5rem 1rem', borderRadius: '4px', fontSize: '0.85rem' }}>Out of Stock</div>
+                                                ) : (
+                                                    <button className="quick-add" onClick={() => { addToCart(product); setShowSearch(false); setSearchQuery(''); }}>Add to Bag</button>
+                                                )}
                                             </div>
                                             <div className="product-info"><h3>{product.name}</h3><p className="product-price">${product.price.toFixed(2)}</p></div>
                                         </div>
