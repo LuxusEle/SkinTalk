@@ -62,6 +62,7 @@ export default function AdminPage() {
     const [newCategoryName, setNewCategoryName] = useState('');
     const [showAddCategory, setShowAddCategory] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
     useEffect(() => {
         checkAuth();
@@ -287,6 +288,7 @@ export default function AdminPage() {
         setNewProductImage(null);
         setNewProductImageName('');
         setEditingProduct(null);
+        setIsCategoryDropdownOpen(false);
     };
 
     const handleEditProduct = (product: Product) => {
@@ -297,6 +299,7 @@ export default function AdminPage() {
         setNewProductCategory(product.category || 'General');
         setNewProductImage(null);
         setNewProductImageName('');
+        setIsCategoryDropdownOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -447,18 +450,39 @@ export default function AdminPage() {
                                 {categories.length === 0 ? (
                                     <input type="text" placeholder="Category" value={newProductCategory} onChange={(e) => setNewProductCategory(e.target.value)} />
                                 ) : !showAddCategory ? (
-                                    <select value={newProductCategory} onChange={(e) => {
-                                        if (e.target.value === '__add_new__') {
-                                            setTimeout(() => setShowAddCategory(true), 10);
-                                        } else {
-                                            setNewProductCategory(e.target.value);
-                                        }
-                                    }}>
-                                        {categories.map(cat => (
-                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
-                                        ))}
-                                        <option value="__add_new__">+ Add new category</option>
-                                    </select>
+                                    <div className="custom-select-wrapper" style={{ position: 'relative' }}>
+                                        <div 
+                                            className={`admin-form-custom-select-trigger ${isCategoryDropdownOpen ? 'open' : ''}`}
+                                            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                                        >
+                                            {newProductCategory}
+                                        </div>
+                                        {isCategoryDropdownOpen && (
+                                            <div className="custom-select-dropdown">
+                                                {categories.map(cat => (
+                                                    <div 
+                                                        key={cat.id}
+                                                        className="custom-select-option"
+                                                        onClick={() => {
+                                                            setNewProductCategory(cat.name);
+                                                            setIsCategoryDropdownOpen(false);
+                                                        }}
+                                                    >
+                                                        {cat.name}
+                                                    </div>
+                                                ))}
+                                                <div 
+                                                    className="custom-select-option add-new"
+                                                    onClick={() => {
+                                                        setTimeout(() => setShowAddCategory(true), 10);
+                                                        setIsCategoryDropdownOpen(false);
+                                                    }}
+                                                >
+                                                    + Add new category
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 ) : (
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                                         <input 
@@ -468,9 +492,10 @@ export default function AdminPage() {
                                             onChange={(e) => setNewCategoryName(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
                                             autoFocus
+                                            style={{ padding: '0.75rem', border: '1px solid #ddd', borderRadius: '8px', fontSize: '0.95rem', flex: 1 }}
                                         />
                                         <button className="admin-btn primary" onClick={handleAddCategory}>Add</button>
-                                        <button className="admin-btn" onClick={() => { setShowAddCategory(false); setNewCategoryName(''); }} style={{ background: '#ddd' }}>Cancel</button>
+                                        <button className="admin-btn" onClick={() => { setShowAddCategory(false); setNewCategoryName(''); }} style={{ background: '#ddd', color: '#333' }}>Cancel</button>
                                     </div>
                                 )}
                                 <div className="file-input-wrapper">
