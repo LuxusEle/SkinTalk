@@ -360,9 +360,9 @@ h1, h2, h3, h4 {
 .quick-add {
     position: absolute;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    width: 85%;
+    left: 7.5%;
+    right: 7.5%;
+    width: auto;
     padding: 14px;
     background: white;
     color: var(--text-main);
@@ -374,10 +374,11 @@ h1, h2, h3, h4 {
     cursor: pointer;
     transition: var(--transition);
     opacity: 0;
+    white-space: nowrap;
 }
 
 .product-card:hover .quick-add {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
     opacity: 1;
 }
 
