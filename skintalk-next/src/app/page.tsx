@@ -16,10 +16,7 @@ interface Product {
 }
 
 interface CartItem {
-    id: string;
-    name: string;
-    price: number;
-    image: string;
+    product_id: string;
 }
 
 function FadeIn({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -47,7 +44,7 @@ export default function Home() {
     const router = useRouter();
     const [scrolled, setScrolled] = useState(false);
     const [cartOpen, setCartOpen] = useState(false);
-    const [cart, setCart] = useState<CartItem[]>([]);
+    const [cart, setCart] = useState<any[]>([]);
     const [theme, setTheme] = useState('elegant');
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<typeof products>([]);
@@ -131,8 +128,19 @@ export default function Home() {
     const loadCartFromDb = async (userId: string) => {
         const supabase = getSupabase();
         const { data } = await supabase.from('carts').select('items').eq('user_id', userId).single();
-        if (data?.items) {
-            setCart(data.items);
+        if (data?.items && data.items.length > 0) {
+            const productIds = data.items.map((item: CartItem) => item.product_id).filter(Boolean);
+            if (productIds.length === 0) {
+                setCart([]);
+                return;
+            }
+            const { data: productsData } = await supabase.from('products').select('*').in('id', productIds);
+            const cartWithProducts: any[] = [];
+            for (const item of data.items) {
+                const product = productsData?.find(p => p.id === item.product_id);
+                if (product) cartWithProducts.push(product);
+            }
+            setCart(cartWithProducts);
         }
     };
 
@@ -220,9 +228,10 @@ export default function Home() {
             setAuthModalOpen(true);
         } else {
             const supabase = getSupabase();
+            const orderItems = cart.map(item => ({ product_id: (item as any).id || (item as any).product_id }));
             const { error } = await supabase.from('orders').insert({
                 user_id: user.id,
-                items: cart,
+                items: orderItems,
                 total: cartTotal,
                 status: 'pending'
             });
@@ -241,7 +250,10 @@ export default function Home() {
         const newCart = [...cart, product];
         setCart(newCart);
         setCartOpen(true);
-        if (user) saveCartToDb(user.id, newCart);
+        if (user) {
+            const dbCart = newCart.map(item => ({ product_id: item.id }));
+            saveCartToDb(user.id, dbCart);
+        }
     };
 
     const removeFromCart = (index: number) => {
@@ -250,7 +262,7 @@ export default function Home() {
         if (user) saveCartToDb(user.id, newCart);
     };
 
-    const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
+    const cartTotal = cart.reduce((sum, item) => sum + ((item as any).price || 0), 0);
 
     useEffect(() => {
         if (theme === 'glow') {
@@ -401,9 +413,12 @@ export default function Home() {
                     <button className="icon-btn close-cart" onClick={() => setCartOpen(false)}><FontAwesomeIcon icon={faTimes} /></button>
                 </div>
                 <div className="sidebar-content">
-                    {cart.length === 0 ? <p className="empty-cart">Your bag is empty.</p> : cart.map((item, index) => (
-                        <div className="cart-item" key={index}><img src={item.image} alt={item.name} className="cart-item-img" /><div className="cart-item-info"><h4>{item.name}</h4><p>${item.price.toFixed(2)}</p><button onClick={() => removeFromCart(index)}>Remove</button></div></div>
-                    ))}
+                    {cart.length === 0 ? <p className="empty-cart">Your bag is empty.</p> : cart.map((item: any, index: number) => {
+                        if (!item || !item.name) return null;
+                        return (
+                        <div className="cart-item" key={index}><img src={item.image} alt={item.name} className="cart-item-img" /><div className="cart-item-info"><h4>{item.name}</h4><p>${(item.price || 0).toFixed(2)}</p><button onClick={() => removeFromCart(index)}>Remove</button></div></div>
+                        );
+                    })}
                 </div>
                 {cart.length > 0 && <div className="sidebar-footer"><div className="cart-total"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div><button className="hero-cta" style={{ width: '100%' }} onClick={handleCheckout}>Proceed to Checkout</button></div>}
             </div>

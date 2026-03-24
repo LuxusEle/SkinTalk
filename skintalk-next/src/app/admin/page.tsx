@@ -24,10 +24,11 @@ interface Product {
 interface Order {
     id: string;
     user_id: string;
-    items: { name: string; price: number; image: string }[];
+    items: { product_id: string }[];
     total: number;
     status: string;
     created_at: string;
+    items_detail?: { name: string; price: number; image: string }[];
 }
 
 interface UserProfile {
@@ -99,7 +100,16 @@ export default function AdminPage() {
         console.log('ordersRes:', ordersRes);
 
         if (productsRes.data) setProducts(productsRes.data);
-        if (ordersRes.data) setOrders(ordersRes.data);
+        if (ordersRes.data) {
+            const ordersWithDetails = ordersRes.data.map(order => {
+                const itemsDetail = order.items?.map((item: { product_id: string }) => {
+                    const product = productsRes.data?.find(p => p.id === item.product_id);
+                    return product ? { name: product.name, price: product.price, image: product.image } : null;
+                }).filter(Boolean);
+                return { ...order, items_detail: itemsDetail };
+            });
+            setOrders(ordersWithDetails);
+        }
         if (categoriesRes.data) setCategories(categoriesRes.data);
         
         if (usersRes.data && ordersRes.data) {
@@ -499,7 +509,7 @@ export default function AdminPage() {
                                         <tr key={order.id}>
                                             <td>{order.id.slice(0, 8)}...</td>
                                             <td>{order.user_id.slice(0, 8)}...</td>
-                                            <td>{order.items?.map((item, i) => <div key={i}>{item.name}</div>)}</td>
+                                            <td>{order.items_detail?.map((item, i) => <div key={i}>{item.name}</div>)}</td>
                                             <td>${order.total.toFixed(2)}</td>
                                             <td><span className={`status-badge ${order.status}`}>{order.status}</span></td>
                                             <td>{new Date(order.created_at).toLocaleDateString()}</td>
