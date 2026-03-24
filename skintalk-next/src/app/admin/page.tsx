@@ -7,6 +7,11 @@ import { faUsers, faShoppingBag, faDollarSign, faBox, faChartLine, faSignOutAlt,
 import { motion } from 'framer-motion';
 import { getSupabase, isAdminEmail, getAdminClient } from '@/lib/supabase';
 
+interface Category {
+    id: string;
+    name: string;
+}
+
 interface Product {
     id: string;
     name: string;
@@ -43,11 +48,16 @@ export default function AdminPage() {
     const [users, setUsers] = useState<UserProfile[]>([]);
     const [stats, setStats] = useState({ totalRevenue: 0, totalOrders: 0, totalUsers: 0, totalProducts: 0 });
     
+    const [categories, setCategories] = useState<Category[]>([]);
     const [newProductName, setNewProductName] = useState('');
     const [newProductPrice, setNewProductPrice] = useState('');
     const [newProductCategory, setNewProductCategory] = useState('General');
     const [newProductImage, setNewProductImage] = useState<File | null>(null);
+    const [newProductImageName, setNewProductImageName] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [showAddCategory, setShowAddCategory] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
     useEffect(() => {
         checkAuth();
@@ -77,30 +87,35 @@ export default function AdminPage() {
 
     const loadData = async () => {
         const supabase = getSupabase();
-        const adminClient = getAdminClient();
 
-        const [productsRes, ordersRes, usersRes] = await Promise.all([
+        const [productsRes, ordersRes, usersRes, categoriesRes] = await Promise.all([
             supabase.from('products').select('*').order('created_at', { ascending: false }),
-            adminClient?.from('orders').select('*').order('created_at', { ascending: false }),
-            supabase.from('user_profiles').select('*').order('created_at', { ascending: false })
+            supabase.from('orders').select('*').order('created_at', { ascending: false }),
+            supabase.from('user_profiles').select('*').order('created_at', { ascending: false }),
+            supabase.from('categories').select('*').order('name', { ascending: true })
         ]);
 
+        console.log('usersRes:', usersRes);
+        console.log('ordersRes:', ordersRes);
+
         if (productsRes.data) setProducts(productsRes.data);
-        if (ordersRes?.data) setOrders(ordersRes.data);
+        if (ordersRes.data) setOrders(ordersRes.data);
+        if (categoriesRes.data) setCategories(categoriesRes.data);
         
-        if (usersRes.data && ordersRes?.data) {
-            const usersWithSpent = usersRes.data.map(user => {
-                const userOrders = ordersRes.data?.filter(o => o.user_id === user.id) || [];
+        if (usersRes.data && ordersRes.data) {
+            const usersWithSpent = usersRes.data.map(u => {
+                const userOrders = ordersRes.data?.filter(o => o.user_id === u.id) || [];
                 const totalSpent = userOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-                return { ...user, total_spent: totalSpent };
+                return { ...u, total_spent: totalSpent };
             });
+            console.log('usersWithSpent:', usersWithSpent);
             setUsers(usersWithSpent);
         }
 
-        const totalRevenue = ordersRes?.data?.reduce((sum, o) => sum + o.total, 0) || 0;
+        const totalRevenue = ordersRes.data?.reduce((sum, o) => sum + o.total, 0) || 0;
         setStats({
             totalRevenue,
-            totalOrders: ordersRes?.data?.length || 0,
+            totalOrders: ordersRes.data?.length || 0,
             totalUsers: usersRes.data?.length || 0,
             totalProducts: productsRes.data?.length || 0
         });
@@ -112,76 +127,171 @@ export default function AdminPage() {
         router.push('/');
     };
 
-    const handleAddProduct = async () => {
+    const handleAddCategory = async () => {
+        if (!newCategoryName.trim()) {
+            return;
+        }
+        if (!user) return;
+        
+        const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'add_category',
+                data: { name: newCategoryName.trim() },
+                userEmail: user.email
+            })
+        });
+        const json = await res.json();
+        
+        if (json.error) {
+            if (json.error.includes('duplicate')) {
+                alert('Category already exists');
+            } else {
+                alert('Error adding category: ' + json.error);
+            }
+        } else {
+            setNewCategoryName('');
+            setShowAddCategory(false);
+            loadData();
+            if (json.data) setNewProductCategory(json.data.name);
+        }
+    };
+
+    const handleSaveProduct = async () => {
         if (!newProductName || !newProductPrice) {
             alert('Please enter product name and price');
             return;
         }
-        const adminClient = getAdminClient();
-        if (!adminClient) {
-            alert('Admin access not configured');
+        if (!user) {
+            alert('Please login first');
             return;
         }
 
         setUploading(true);
-        let imageUrl = '/WhatsApp Image 2026-03-23 at 9.10.39 AM.jpeg';
+        let imageUrl = editingProduct?.image || '/WhatsApp Image 2026-03-23 at 9.10.39 AM.jpeg';
+        const oldImage = editingProduct?.image;
+
+        const saveProduct = async (imgUrl: string) => {
+            const action = editingProduct ? 'update_product' : 'add_product';
+            const data: any = {
+                name: newProductName,
+                price: parseFloat(newProductPrice),
+                image: imgUrl,
+                category: newProductCategory
+            };
+            if (editingProduct) {
+                data.id = editingProduct.id;
+                data.oldImage = oldImage;
+            }
+
+            const res = await fetch('/api/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, data, userEmail: user.email })
+            });
+            const json = await res.json();
+            
+            if (json.error) {
+                alert(`Error ${editingProduct ? 'updating' : 'adding'} product: ` + json.error);
+            } else {
+                resetForm();
+                loadData();
+                alert(editingProduct ? 'Product updated!' : 'Product added!');
+            }
+            setUploading(false);
+        };
 
         if (newProductImage) {
             const fileExt = newProductImage.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-            const { error: uploadError } = await adminClient.storage
-                .from('products')
-                .upload(fileName, newProductImage);
-
-            if (uploadError) {
-                alert('Error uploading image: ' + uploadError.message);
-                setUploading(false);
-                return;
-            }
-
-            const { data: { publicUrl } } = adminClient.storage
-                .from('products')
-                .getPublicUrl(fileName);
-            imageUrl = publicUrl;
-        }
-
-        const { error } = await adminClient.from('products').insert({
-            name: newProductName,
-            price: parseFloat(newProductPrice),
-            image: imageUrl,
-            category: newProductCategory
-        });
-
-        if (error) {
-            alert('Error adding product: ' + error.message);
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(newProductImage);
+            reader.onload = async () => {
+                const base64 = (reader.result as string).split(',')[1];
+                
+                const uploadRes = await fetch('/api/admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'upload_image',
+                        data: { imageData: base64, fileName },
+                        userEmail: user.email
+                    })
+                });
+                const uploadJson = await uploadRes.json();
+                
+                if (uploadJson.error) {
+                    alert('Error uploading image: ' + uploadJson.error);
+                    setUploading(false);
+                    return;
+                }
+                
+                saveProduct(uploadJson.url);
+            };
         } else {
-            setNewProductName('');
-            setNewProductPrice('');
-            setNewProductImage(null);
-            loadData();
-            alert('Product added successfully!');
+            saveProduct(imageUrl);
         }
-        setUploading(false);
+    };
+
+    const resetForm = () => {
+        setNewProductName('');
+        setNewProductPrice('');
+        setNewProductCategory('General');
+        setNewProductImage(null);
+        setNewProductImageName('');
+        setEditingProduct(null);
+    };
+
+    const handleEditProduct = (product: Product) => {
+        setEditingProduct(product);
+        setNewProductName(product.name);
+        setNewProductPrice(product.price.toString());
+        setNewProductCategory(product.category || 'General');
+        setNewProductImage(null);
+        setNewProductImageName('');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleDeleteProduct = async (productId: string) => {
         if (!confirm('Are you sure you want to delete this product?')) return;
-        const adminClient = getAdminClient();
-        if (!adminClient) return;
+        if (!user) return;
         
-        const { error } = await adminClient.from('products').delete().eq('id', productId);
-        if (!error) {
+        const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'delete_product',
+                data: { id: productId },
+                userEmail: user.email
+            })
+        });
+        const json = await res.json();
+        
+        if (json.error) {
+            alert('Error: ' + json.error);
+        } else {
             loadData();
             alert('Product deleted!');
         }
     };
 
     const handleStatusChange = async (orderId: string, status: string) => {
-        const adminClient = getAdminClient();
-        if (!adminClient) return;
+        if (!user) return;
         
-        const { error } = await adminClient.from('orders').update({ status }).eq('id', orderId);
-        if (!error) loadData();
+        const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'update_order_status',
+                data: { id: orderId, status },
+                userEmail: user.email
+            })
+        });
+        const json = await res.json();
+        
+        if (!json.error) loadData();
     };
 
     if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
@@ -283,24 +393,57 @@ export default function AdminPage() {
                         <h1>Product Management</h1>
                         
                         <div className="admin-card">
-                            <h3><FontAwesomeIcon icon={faPlus} /> Add New Product</h3>
+                            <h3><FontAwesomeIcon icon={faPlus} /> {editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
                             <div className="admin-form-grid">
                                 <input type="text" placeholder="Product Name" value={newProductName} onChange={(e) => setNewProductName(e.target.value)} />
                                 <input type="number" placeholder="Price" value={newProductPrice} onChange={(e) => setNewProductPrice(e.target.value)} />
-                                <select value={newProductCategory} onChange={(e) => setNewProductCategory(e.target.value)}>
-                                    <option value="General">General</option>
-                                    <option value="Serums">Serums</option>
-                                    <option value="Moisturizers">Moisturizers</option>
-                                    <option value="Cleansers">Cleansers</option>
-                                </select>
+                                {categories.length === 0 ? (
+                                    <input type="text" placeholder="Category" value={newProductCategory} onChange={(e) => setNewProductCategory(e.target.value)} />
+                                ) : !showAddCategory ? (
+                                    <select value={newProductCategory} onChange={(e) => {
+                                        if (e.target.value === '__add_new__') {
+                                            setTimeout(() => setShowAddCategory(true), 10);
+                                        } else {
+                                            setNewProductCategory(e.target.value);
+                                        }
+                                    }}>
+                                        {categories.map(cat => (
+                                            <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                        ))}
+                                        <option value="__add_new__">+ Add new category</option>
+                                    </select>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <input 
+                                            type="text" 
+                                            placeholder="New category name" 
+                                            value={newCategoryName} 
+                                            onChange={(e) => setNewCategoryName(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                                            autoFocus
+                                        />
+                                        <button className="admin-btn primary" onClick={handleAddCategory}>Add</button>
+                                        <button className="admin-btn" onClick={() => { setShowAddCategory(false); setNewCategoryName(''); }} style={{ background: '#ddd' }}>Cancel</button>
+                                    </div>
+                                )}
                                 <div className="file-input-wrapper">
-                                    <label><FontAwesomeIcon icon={faImage} /> Upload Image</label>
-                                    <input type="file" accept="image/*" onChange={(e) => setNewProductImage(e.target.files?.[0] || null)} />
+                                    <label>
+                                        <FontAwesomeIcon icon={faImage} /> 
+                                        {newProductImageName ? newProductImageName : 'Upload Image'}
+                                    </label>
+                                    <input type="file" accept="image/*" onChange={(e) => { setNewProductImage(e.target.files?.[0] || null); setNewProductImageName(e.target.files?.[0]?.name || ''); }} />
                                 </div>
                             </div>
-                            <button className="admin-btn primary" onClick={handleAddProduct} disabled={uploading}>
-                                {uploading ? 'Uploading...' : 'Add Product'}
-                            </button>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button className="admin-btn primary" onClick={handleSaveProduct} disabled={uploading}>
+                                    {uploading ? 'Saving...' : editingProduct ? 'Save Changes' : 'Add Product'}
+                                </button>
+                                {editingProduct && (
+                                    <button className="admin-btn" onClick={resetForm} style={{ background: '#ddd' }}>
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <h2 style={{ marginTop: '2rem' }}>All Products</h2>
@@ -317,12 +460,12 @@ export default function AdminPage() {
                                 </thead>
                                 <tbody>
                                     {products.map(product => (
-                                        <tr key={product.id}>
+                                        <tr key={product.id} onClick={() => handleEditProduct(product)} style={{ cursor: 'pointer' }}>
                                             <td><img src={product.image} alt={product.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 4 }} /></td>
                                             <td>{product.name}</td>
                                             <td>{product.category}</td>
                                             <td>${product.price.toFixed(2)}</td>
-                                            <td>
+                                            <td onClick={(e) => e.stopPropagation()}>
                                                 <button className="admin-btn danger" onClick={() => handleDeleteProduct(product.id)}>
                                                     <FontAwesomeIcon icon={faTrash} />
                                                 </button>
