@@ -395,7 +395,7 @@ export default function Home() {
                                             <motion.button className="quick-add" onClick={() => addToCart(product)} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Add to Bag</motion.button>
                                         )}
                                     </div>
-                                    <div className="product-info"><h3>{product.name}</h3><p className="product-price">${product.price.toFixed(2)}</p></div>
+                                    <div className="product-info"><h3>{product.name}</h3><p className="product-price">LKR {product.price.toFixed(2)}</p></div>
                                 </motion.div>
                             </FadeIn>
                         ))}
@@ -435,11 +435,11 @@ export default function Home() {
                     {cart.length === 0 ? <p className="empty-cart">Your bag is empty.</p> : cart.map((item: any, index: number) => {
                         if (!item || !item.name) return null;
                         return (
-                        <div className="cart-item" key={index}><img src={item.image} alt={item.name} className="cart-item-img" /><div className="cart-item-info"><h4>{item.name}</h4><p>${(item.price || 0).toFixed(2)}</p><button onClick={() => removeFromCart(index)}>Remove</button></div></div>
+                        <div className="cart-item" key={index}><img src={item.image} alt={item.name} className="cart-item-img" /><div className="cart-item-info"><h4>{item.name}</h4><p>LKR {(item.price || 0).toFixed(2)}</p><button onClick={() => removeFromCart(index)}>Remove</button></div></div>
                         );
                     })}
                 </div>
-                {cart.length > 0 && <div className="sidebar-footer"><div className="cart-total"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div><button className="hero-cta" style={{ width: '100%' }} onClick={handleCheckout} disabled={checkoutLoading}>{checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}</button></div>}
+                {cart.length > 0 && <div className="sidebar-footer"><div className="cart-total"><span>Subtotal</span><span>LKR {cartTotal.toFixed(2)}</span></div><button className="hero-cta" style={{ width: '100%' }} onClick={handleCheckout} disabled={checkoutLoading}>{checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}</button></div>}
             </div>
 
             {isAdmin && <motion.button className="admin-trigger" id="admin-trigger" onClick={() => router.push('/admin')} whileHover={{ rotate: 45, scale: 1.1 }} whileTap={{ scale: 0.9 }}><FontAwesomeIcon icon={faMagic} /></motion.button>}
@@ -464,7 +464,7 @@ export default function Home() {
                                                     <button className="quick-add" onClick={() => { addToCart(product); setShowSearch(false); setSearchQuery(''); }}>Add to Bag</button>
                                                 )}
                                             </div>
-                                            <div className="product-info"><h3>{product.name}</h3><p className="product-price">${product.price.toFixed(2)}</p></div>
+                                            <div className="product-info"><h3>{product.name}</h3><p className="product-price">LKR {product.price.toFixed(2)}</p></div>
                                         </div>
                                     ))}
                                 </div>

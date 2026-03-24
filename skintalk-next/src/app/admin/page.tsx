@@ -383,7 +383,7 @@ export default function AdminPage() {
                                 <div className="stat-icon"><FontAwesomeIcon icon={faDollarSign} /></div>
                                 <div className="stat-content">
                                     <h3>Total Revenue</h3>
-                                    <p className="stat-value">${stats.totalRevenue.toFixed(2)}</p>
+                                    <p className="stat-value">LKR {stats.totalRevenue.toFixed(2)}</p>
                                 </div>
                             </div>
                             <div className="admin-stat-card">
@@ -426,7 +426,7 @@ export default function AdminPage() {
                                         <tr key={order.id}>
                                             <td>{order.customer_email || 'Unknown'}</td>
                                             <td>{order.items?.length || 0} items</td>
-                                            <td>${order.total.toFixed(2)}</td>
+                                            <td>LKR {order.total.toFixed(2)}</td>
                                             <td><span className={`status-badge ${order.status}`}>{order.status}</span></td>
                                             <td>{new Date(order.created_at).toLocaleDateString()}</td>
                                         </tr>
@@ -537,7 +537,7 @@ export default function AdminPage() {
                                             <td><img src={product.image} alt={product.name} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 4 }} /></td>
                                             <td>{product.name}</td>
                                             <td>{product.category}</td>
-                                            <td>${product.price.toFixed(2)}</td>
+                                            <td>LKR {product.price.toFixed(2)}</td>
                                             <td>{product.quantity || 0}</td>
                                             <td onClick={(e) => e.stopPropagation()}>
                                                 <button className="admin-btn danger" onClick={() => handleDeleteProduct(product.id)}>
@@ -572,7 +572,7 @@ export default function AdminPage() {
                                         <tr key={order.id}>
                                             <td>{order.customer_email}</td>
                                             <td>{order.items_detail?.map((item, i) => <div key={i}>{item.name}</div>)}</td>
-                                            <td>${order.total.toFixed(2)}</td>
+                                            <td>LKR {order.total.toFixed(2)}</td>
                                             <td><span className={`status-badge ${order.status}`}>{order.status}</span></td>
                                             <td>{new Date(order.created_at).toLocaleDateString()}</td>
                                             <td>
@@ -609,7 +609,7 @@ export default function AdminPage() {
                                         <tr key={user.id}>
                                             <td>{user.email}</td>
                                             <td>{new Date(user.created_at).toLocaleDateString()}</td>
-                                            <td style={{ fontWeight: 600, color: 'var(--accent)' }}>${(user.total_spent || 0).toFixed(2)}</td>
+                                            <td style={{ fontWeight: 600, color: 'var(--accent)' }}>LKR {(user.total_spent || 0).toFixed(2)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
